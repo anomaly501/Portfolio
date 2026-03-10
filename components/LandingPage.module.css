@@ -1,0 +1,197 @@
+.container {
+    position: relative;
+    z-index: 10;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    gap: 3rem;
+    text-align: center;
+}
+
+.scanlines {
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(to bottom,
+            transparent 0px,
+            transparent 3px,
+            rgba(0, 255, 65, 0.02) 3px,
+            rgba(0, 255, 65, 0.02) 4px);
+    pointer-events: none;
+    z-index: 1;
+}
+
+.headerBlock {
+    max-width: 760px;
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+}
+
+.eyebrow {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.3em;
+    color: #00ff41;
+    opacity: 0.6;
+    text-transform: uppercase;
+}
+
+.headline {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 700;
+    line-height: 1.2;
+    color: #fff;
+    text-shadow: 0 0 20px rgba(0, 255, 65, 0.3);
+}
+
+.sub {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: clamp(0.75rem, 1.5vw, 0.9rem);
+    color: #778866;
+    line-height: 1.8;
+    max-width: 620px;
+    margin: 0 auto;
+}
+
+/* PILLS ROW */
+.pillsRow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+}
+
+.pill {
+    background: none;
+    border: none;
+    cursor: pointer;
+    perspective: 800px;
+}
+
+.pillInner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+/* 3D Pill Capsule */
+.pillShape {
+    width: 90px;
+    height: 180px;
+    border-radius: 50px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.bluePill .pillShape {
+    background: linear-gradient(135deg, #0050aa 0%, #00b4ff 40%, #0070cc 60%, #003580 100%);
+    box-shadow: 0 0 20px #00b4ff55, 0 0 40px #00b4ff22, inset 0 2px 4px rgba(255, 255, 255, 0.3);
+}
+
+.bluePill:hover .pillShape {
+    box-shadow: 0 0 40px #00b4ff, 0 0 80px #00b4ff55, inset 0 2px 4px rgba(255, 255, 255, 0.4);
+}
+
+.redPill .pillShape {
+    background: linear-gradient(135deg, #8b0000 0%, #ff003c 40%, #cc0030 60%, #5a0000 100%);
+    box-shadow: 0 0 20px #ff003c55, 0 0 40px #ff003c22, inset 0 2px 4px rgba(255, 255, 255, 0.3);
+}
+
+.redPill:hover .pillShape {
+    box-shadow: 0 0 40px #ff003c, 0 0 80px #ff003c55, inset 0 2px 4px rgba(255, 255, 255, 0.4);
+}
+
+/* Gloss shine */
+.pillGloss {
+    position: absolute;
+    top: 10px;
+    left: 15px;
+    width: 30px;
+    height: 60%;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.4) 0%, transparent 100%);
+    border-radius: 20px;
+}
+
+.pillLabel {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+}
+
+.bluePill .pillLabel {
+    color: #00b4ff;
+    text-shadow: 0 0 10px #00b4ff;
+}
+
+.redPill .pillLabel {
+    color: #ff003c;
+    text-shadow: 0 0 10px #ff003c;
+}
+
+.pillSub {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.7rem;
+    color: #666;
+    letter-spacing: 0.1em;
+}
+
+.orDivider {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    height: 180px;
+    justify-content: center;
+}
+
+.orLine {
+    flex: 1;
+    width: 1px;
+    background: linear-gradient(to bottom, transparent, #333, transparent);
+    min-height: 40px;
+}
+
+.orText {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.75rem;
+    color: #444;
+    letter-spacing: 0.2em;
+}
+
+.footer {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.75rem;
+    color: #333;
+    letter-spacing: 0.1em;
+    font-style: italic;
+}
+
+@media (max-width: 600px) {
+    .pillsRow {
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .orDivider {
+        flex-direction: row;
+        height: auto;
+        width: 200px;
+    }
+
+    .orLine {
+        height: 1px;
+        width: auto;
+        min-height: unset;
+        min-width: 40px;
+        background: linear-gradient(to right, transparent, #333, transparent);
+    }
+}
