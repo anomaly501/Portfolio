@@ -1,211 +1,1360 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MISSION: PORTFOLIO</title>
-    <link rel="stylesheet" href="styles.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&display=swap" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>THE MATRIX — Portfolio</title>
+  <meta name="description" content="Choose your pill. A cinematic matrix-themed portfolio with red and blue pill paths." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    /* ─── CSS VARIABLES ─────────────────────────────────────── */
+    :root {
+      --green:      #00ff41;
+      --green-dim:  #00cc33;
+      --green-dark: #003b00;
+      --blue-neon:  #00b4ff;
+      --blue-dim:   #0080cc;
+      --red-neon:   #ff003c;
+      --red-dim:    #cc0030;
+      --bg:         #000000;
+      --surface:    #0a0a0a;
+      --surface2:   #111111;
+      --text:       #ccffcc;
+      --mono:       'Share Tech Mono', monospace;
+      --sans:       'Rajdhani', sans-serif;
+    }
+
+    /* ─── RESET & BASE ──────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--mono);
+      overflow-x: hidden;
+    }
+
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #000; }
+    ::-webkit-scrollbar-thumb { background: var(--green-dark); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--green-dim); }
+    ::selection { background: var(--green-dark); color: var(--green); }
+
+    button { cursor: pointer; border: none; background: none; font-family: var(--mono); }
+
+    /* ─── KEYFRAMES ─────────────────────────────────────────── */
+    @keyframes glitch-clip1 {
+      0%   { clip-path: inset(40% 0 61% 0); }
+      20%  { clip-path: inset(92% 0 1%  0); }
+      40%  { clip-path: inset(43% 0 1%  0); }
+      60%  { clip-path: inset(25% 0 58% 0); }
+      80%  { clip-path: inset(54% 0 7%  0); }
+      100% { clip-path: inset(58% 0 43% 0); }
+    }
+    @keyframes glitch-clip2 {
+      0%   { clip-path: inset(65% 0 12% 0); }
+      20%  { clip-path: inset(9%  0 60% 0); }
+      40%  { clip-path: inset(72% 0 2%  0); }
+      60%  { clip-path: inset(16% 0 77% 0); }
+      80%  { clip-path: inset(41% 0 32% 0); }
+      100% { clip-path: inset(80% 0 5%  0); }
+    }
+    @keyframes flicker {
+      0%, 19.999%, 22%, 62.999%, 64%, 64.999%, 70%, 100% { opacity: 1; }
+      20%, 21.999%, 63%, 63.999%, 65%, 69.999%            { opacity: 0.4; }
+    }
+    @keyframes scanline {
+      0%   { transform: translateY(-100%); }
+      100% { transform: translateY(100vh); }
+    }
+    @keyframes blink {
+      0%, 50%   { opacity: 1; }
+      51%, 100% { opacity: 0; }
+    }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes pulse-glow {
+      0%, 100% { box-shadow: 0 0 15px currentColor, 0 0 30px currentColor; }
+      50%       { box-shadow: 0 0 30px currentColor, 0 0 60px currentColor, 0 0 90px currentColor; }
+    }
+    @keyframes progress-fill {
+      from { width: 0%; }
+      to   { width: 100%; }
+    }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(40px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes slideRight {
+      from { opacity: 0; transform: translateX(30px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+
+    /* ─── CANVAS (Matrix Rain) ──────────────────────────────── */
+    #matrix-canvas {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: 0;
+      pointer-events: none;
+      transition: opacity 0.5s ease;
+    }
+
+    /* ─── SCANLINES OVERLAY ─────────────────────────────────── */
+    .scanlines {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0,0,0,0.07) 2px,
+        rgba(0,0,0,0.07) 4px
+      );
+    }
+    .scanlines::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(transparent 50%, rgba(0, 0, 0, 0.03) 50%);
+      background-size: 100% 4px;
+      animation: scanline 8s linear infinite;
+      pointer-events: none;
+      opacity: 0.3;
+    }
+
+    /* ─── SCREENS ───────────────────────────────────────────── */
+    .screen {
+      display: none;
+      position: relative;
+      z-index: 2;
+      min-height: 100vh;
+    }
+    .screen.active { display: block; }
+
+    /* ═══════════════════════════════════════════════════════════
+       LANDING SCREEN
+       ═══════════════════════════════════════════════════════════ */
+    #screen-landing {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 2rem;
+      text-align: center;
+      animation: fadeIn 0.5s ease;
+    }
+
+    .eyebrow {
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.18em;
+      color: var(--green-dim);
+      margin-bottom: 1.25rem;
+      animation: fadeInUp 0.8s ease both;
+      animation-delay: 0.3s;
+    }
+
+    .landing-headline {
+      font-family: var(--sans);
+      font-size: clamp(1.8rem, 5vw, 3.2rem);
+      font-weight: 700;
+      color: #fff;
+      line-height: 1.15;
+      letter-spacing: -0.01em;
+      text-shadow: 0 0 30px rgba(0,255,65,0.25);
+      animation: fadeInUp 0.8s ease both;
+      animation-delay: 0.45s;
+      margin-bottom: 1.5rem;
+    }
+
+    .landing-sub {
+      font-family: var(--mono);
+      font-size: clamp(0.78rem, 1.5vw, 0.92rem);
+      color: rgba(204,255,204,0.65);
+      line-height: 1.8;
+      max-width: 560px;
+      animation: fadeInUp 0.8s ease both;
+      animation-delay: 0.6s;
+      margin-bottom: 3rem;
+    }
+
+    /* Pills Row */
+    .pills-row {
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+      flex-wrap: wrap;
+      justify-content: center;
+      animation: fadeInUp 0.8s ease both;
+      animation-delay: 0.75s;
+      margin-bottom: 2.5rem;
+    }
+
+    .pill-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+      padding: 0;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-family: var(--mono);
+      transition: transform 0.25s ease;
+      perspective: 600px;
+    }
+    .pill-btn:hover { transform: scale(1.08); }
+    .pill-btn:active { transform: scale(0.95); }
+
+    .pill-shape-wrap {
+      width: 72px;
+      height: 72px;
+      position: relative;
+    }
+    .pill-shape {
+      width: 100%;
+      height: 100%;
+      border-radius: 50px;
+      position: relative;
+      overflow: hidden;
+      animation: pulse-glow 2.5s ease-in-out infinite;
+    }
+    .pill-shape::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      opacity: 0.6;
+    }
+    .pill-gloss {
+      position: absolute;
+      top: 10%;
+      left: 15%;
+      width: 45%;
+      height: 35%;
+      background: linear-gradient(135deg, rgba(255,255,255,0.55) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+
+    .pill-blue .pill-shape {
+      background: linear-gradient(135deg, #0044aa 0%, var(--blue-neon) 60%, #0066cc 100%);
+      box-shadow: 0 0 20px var(--blue-neon), 0 0 40px rgba(0,180,255,0.4);
+    }
+    .pill-red .pill-shape {
+      background: linear-gradient(135deg, #660011 0%, var(--red-neon) 60%, #990022 100%);
+      box-shadow: 0 0 20px var(--red-neon), 0 0 40px rgba(255,0,60,0.4);
+    }
+
+    .pill-label {
+      font-size: 0.8rem;
+      letter-spacing: 0.15em;
+      font-weight: 700;
+    }
+    .pill-blue .pill-label { color: var(--blue-neon); }
+    .pill-red  .pill-label { color: var(--red-neon); }
+
+    .pill-sublabel {
+      font-size: 0.68rem;
+      color: rgba(204,255,204,0.5);
+      letter-spacing: 0.1em;
+    }
+
+    .or-divider {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .or-line {
+      width: 1px;
+      height: 40px;
+      background: linear-gradient(to bottom, transparent, rgba(0,255,65,0.3), transparent);
+    }
+    .or-text {
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      color: rgba(0,255,65,0.4);
+    }
+
+    .landing-footer {
+      font-size: 0.72rem;
+      color: rgba(204,255,204,0.35);
+      letter-spacing: 0.1em;
+      animation: fadeInUp 0.8s ease both;
+      animation-delay: 0.9s;
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       GLITCH TRANSITION SCREEN
+       ═══════════════════════════════════════════════════════════ */
+    #screen-glitch {
+      position: fixed;
+      inset: 0;
+      z-index: 10;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #000;
+    }
+    #screen-glitch.active { display: flex; }
+
+    .glitch-center {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+    }
+
+    .glitch-wrap {
+      position: relative;
+      margin-bottom: 1rem;
+    }
+    .glitch-base, .glitch-layer1, .glitch-layer2 {
+      font-family: var(--sans);
+      font-size: clamp(2rem, 8vw, 5rem);
+      font-weight: 700;
+      letter-spacing: 0.08em;
+    }
+    .glitch-layer1, .glitch-layer2 {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+    }
+    .glitch-layer1 {
+      animation: glitch-clip1 0.4s steps(1) infinite;
+      transform: translateX(-3px);
+      opacity: 0.85;
+    }
+    .glitch-layer2 {
+      animation: glitch-clip2 0.4s steps(1) infinite;
+      transform: translateX(3px);
+      opacity: 0.85;
+    }
+
+    .glitch-subtext {
+      font-family: var(--mono);
+      font-size: 0.85rem;
+      opacity: 0.6;
+      letter-spacing: 0.12em;
+      margin-bottom: 2rem;
+      color: #ccffcc;
+    }
+
+    .glitch-progress-bar {
+      width: min(420px, 80vw);
+      height: 3px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 2px;
+      overflow: hidden;
+      margin: 0 auto;
+    }
+    .glitch-progress-fill {
+      height: 100%;
+      width: 0%;
+      border-radius: 2px;
+      animation: progress-fill 2.4s linear forwards;
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       BLUE PILL PATH
+       ═══════════════════════════════════════════════════════════ */
+    #screen-blue {
+      padding: 0 0 4rem;
+      animation: fadeIn 0.6s ease;
+    }
+
+    .blue-header {
+      padding: 2rem 3rem;
+      border-bottom: 1px solid rgba(0,180,255,0.12);
+      position: relative;
+    }
+
+    .back-btn {
+      font-size: 0.72rem;
+      letter-spacing: 0.15em;
+      color: rgba(204,255,204,0.5);
+      cursor: pointer;
+      border: none;
+      background: none;
+      font-family: var(--mono);
+      padding: 0;
+      margin-bottom: 1.5rem;
+      display: inline-block;
+      transition: color 0.2s;
+    }
+    .back-btn:hover { color: var(--green); }
+    .back-btn-red:hover { color: var(--red-neon) !important; }
+
+    .blue-header .eyebrow { animation: slideUp 0.6s ease both; }
+    .blue-title {
+      font-family: var(--sans);
+      font-size: clamp(1.6rem, 4vw, 2.8rem);
+      font-weight: 700;
+      color: var(--blue-neon);
+      text-shadow: 0 0 20px rgba(0,180,255,0.4);
+      margin-bottom: 0.5rem;
+      animation: slideUp 0.6s 0.1s ease both;
+    }
+    .blue-subtitle {
+      font-size: 0.82rem;
+      color: rgba(204,255,204,0.55);
+      max-width: 520px;
+      line-height: 1.7;
+      animation: slideUp 0.6s 0.2s ease both;
+    }
+
+    .stats-bar {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      margin-top: 1.5rem;
+      animation: fadeIn 0.6s 0.5s ease both;
+      opacity: 0;
+      animation-fill-mode: forwards;
+    }
+    .stat-item {
+      display: flex;
+      flex-direction: column;
+      gap: 0.15rem;
+    }
+    .stat-item span:first-child {
+      font-size: 0.62rem;
+      letter-spacing: 0.15em;
+      color: rgba(204,255,204,0.45);
+    }
+    .stat-val {
+      font-size: 1.4rem;
+      font-family: var(--sans);
+      font-weight: 700;
+      color: var(--blue-neon);
+    }
+    .stat-val-green {
+      font-size: 1.4rem;
+      font-family: var(--sans);
+      font-weight: 700;
+      color: var(--green);
+    }
+    .stat-div {
+      width: 1px;
+      height: 36px;
+      background: rgba(204,255,204,0.15);
+      margin: 0 2rem;
+    }
+
+    /* Project Grid */
+    .projects-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 1.5rem;
+      padding: 2.5rem 3rem;
+    }
+
+    .project-card {
+      background: var(--surface);
+      border: 1px solid rgba(0,180,255,0.1);
+      border-radius: 4px;
+      overflow: hidden;
+      cursor: pointer;
+      position: relative;
+      transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+      animation: slideUp 0.6s ease both;
+    }
+    .project-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(0,180,255,0.45);
+      box-shadow: 0 8px 40px rgba(0,180,255,0.12);
+    }
+    .project-card:hover .sys-data-overlay { opacity: 1; transform: translateY(0); }
+    .project-card:hover .view-btn { color: var(--blue-neon); border-color: var(--blue-neon); }
+    .project-card:hover .card-glow-border { opacity: 1; }
+
+    .card-thumb-wrap {
+      position: relative;
+      height: 180px;
+      overflow: hidden;
+    }
+    .card-thumb {
+      width: 100%;
+      height: 100%;
+    }
+    .card-thumb-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 60%);
+    }
+    .card-noise {
+      position: absolute;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.08'/%3E%3C/svg%3E");
+      opacity: 0.2;
+      mix-blend-mode: overlay;
+    }
+
+    .sys-data-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.82);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 1.2rem;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 0.25s ease, transform 0.25s ease;
+    }
+    .sys-header {
+      font-size: 0.62rem;
+      letter-spacing: 0.15em;
+      color: var(--green);
+      margin-bottom: 0.75rem;
+    }
+    .sys-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.68rem;
+      color: rgba(204,255,204,0.65);
+      padding: 0.2rem 0;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .sys-row:last-child { border-bottom: none; }
+    .sys-row span:last-child { color: #fff; }
+    .sys-status-ok { color: var(--green) !important; }
+
+    .card-year {
+      position: absolute;
+      top: 0.75rem;
+      right: 0.75rem;
+      background: rgba(0,0,0,0.7);
+      border: 1px solid rgba(0,180,255,0.3);
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      padding: 0.2rem 0.5rem;
+      color: var(--blue-neon);
+    }
+
+    .card-info {
+      padding: 1.25rem;
+    }
+    .card-genre {
+      font-size: 0.62rem;
+      letter-spacing: 0.15em;
+      color: rgba(204,255,204,0.45);
+      margin-bottom: 0.4rem;
+    }
+    .card-title {
+      font-family: var(--sans);
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 0.5rem;
+    }
+    .card-desc {
+      font-size: 0.72rem;
+      color: rgba(204,255,204,0.55);
+      line-height: 1.6;
+      margin-bottom: 0.9rem;
+    }
+    .view-btn {
+      display: inline-block;
+      font-size: 0.68rem;
+      letter-spacing: 0.15em;
+      color: rgba(204,255,204,0.55);
+      border: 1px solid rgba(204,255,204,0.2);
+      padding: 0.35rem 0.75rem;
+      transition: color 0.3s, border-color 0.3s;
+    }
+
+    .card-glow-border {
+      position: absolute;
+      inset: 0;
+      border: 1px solid var(--blue-neon);
+      border-radius: 4px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+      box-shadow: inset 0 0 15px rgba(0,180,255,0.08);
+    }
+
+    .blue-footer {
+      text-align: center;
+      padding: 2rem;
+      border-top: 1px solid rgba(0,180,255,0.1);
+      margin: 0 3rem;
+    }
+    .blue-footer p {
+      font-size: 0.68rem;
+      color: rgba(204,255,204,0.35);
+      letter-spacing: 0.1em;
+      margin-bottom: 1rem;
+    }
+    .other-pill-btn {
+      font-size: 0.72rem;
+      letter-spacing: 0.12em;
+      color: var(--red-neon);
+      border: 1px solid rgba(255,0,60,0.35);
+      padding: 0.5rem 1.25rem;
+      cursor: pointer;
+      background: none;
+      font-family: var(--mono);
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .other-pill-btn:hover {
+      border-color: var(--red-neon);
+      background: rgba(255,0,60,0.05);
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       RED PILL PATH
+       ═══════════════════════════════════════════════════════════ */
+    #screen-red {
+      min-height: 100vh;
+      animation: fadeIn 0.6s ease;
+    }
+
+    .red-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      min-height: 100vh;
+    }
+
+    /* Left Panel — Terminal */
+    .red-left {
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid rgba(0,255,65,0.08);
+    }
+
+    .terminal-box {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      border: 1px solid rgba(0,255,65,0.2);
+      border-radius: 6px;
+      overflow: hidden;
+      background: rgba(0,10,0,0.7);
+      animation: slideUp 0.6s ease both;
+    }
+    .term-chrome {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.65rem 1rem;
+      background: rgba(0,255,65,0.04);
+      border-bottom: 1px solid rgba(0,255,65,0.12);
+    }
+    .chrome-dots { display: flex; gap: 0.4rem; }
+    .chrome-dot {
+      width: 12px; height: 12px;
+      border-radius: 50%;
+    }
+    .chrome-title {
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      color: rgba(0,255,65,0.5);
+      flex: 1;
+      text-align: center;
+    }
+
+    .term-body {
+      flex: 1;
+      padding: 1rem 1.2rem;
+      overflow-y: auto;
+      font-size: 0.8rem;
+      line-height: 1.65;
+    }
+    .term-line { color: rgba(204,255,204,0.65); white-space: pre-wrap; }
+    .term-line.cmd { color: var(--green); }
+    .term-line.echo { color: rgba(204,255,204,0.5); }
+    .term-blank { height: 0.65rem; }
+
+    .term-prompt-line {
+      display: flex;
+      gap: 0.4rem;
+      margin: 0.5rem 0;
+    }
+    .prompt-symbol { color: var(--green); }
+    .prompt-text   { color: rgba(204,255,204,0.7); }
+
+    .terminal-form { margin-top: 0.5rem; }
+    .field-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .field-label {
+      font-size: 0.72rem;
+      color: var(--green);
+      min-width: 70px;
+      padding-top: 0.2rem;
+      letter-spacing: 0.1em;
+    }
+    .field-sep {
+      color: rgba(0,255,65,0.45);
+      padding-top: 0.2rem;
+    }
+    .field-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid rgba(0,255,65,0.25);
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      padding: 0.2rem 0.3rem;
+      outline: none;
+      transition: border-color 0.2s;
+      resize: none;
+    }
+    .field-input::placeholder { color: rgba(204,255,204,0.25); }
+    .field-input:focus { border-color: var(--green); }
+    .field-input.field-textarea { padding-top: 0.3rem; }
+
+    .cursor {
+      display: inline-block;
+      color: var(--green);
+      animation: blink 1s step-end infinite;
+    }
+
+    .submit-btn {
+      margin-top: 0.75rem;
+      background: none;
+      border: 1px solid rgba(0,255,65,0.35);
+      color: var(--green);
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      letter-spacing: 0.12em;
+      padding: 0.5rem 1.2rem;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s;
+      display: flex;
+      gap: 0.4rem;
+      align-items: center;
+    }
+    .submit-btn:hover { background: rgba(0,255,65,0.06); border-color: var(--green); }
+    .submit-btn:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+    .submit-bracket { color: rgba(0,255,65,0.5); }
+
+    /* Right Panel — Info */
+    .red-right {
+      padding: 3rem 2.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+      animation: slideRight 0.8s 0.4s ease both;
+      opacity: 0;
+      animation-fill-mode: forwards;
+    }
+    .red-eyebrow { margin-bottom: 0.75rem; }
+    .red-title {
+      font-family: var(--sans);
+      font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+      font-weight: 700;
+      color: #fff;
+      line-height: 1.15;
+      margin-bottom: 1rem;
+      text-shadow: 0 0 30px rgba(255,0,60,0.2);
+    }
+    .red-desc {
+      font-size: 0.82rem;
+      color: rgba(204,255,204,0.55);
+      line-height: 1.7;
+    }
+
+    .info-cards {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    .info-card {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem 1.25rem;
+      background: rgba(0,255,65,0.03);
+      border: 1px solid rgba(0,255,65,0.1);
+      border-radius: 4px;
+    }
+    .info-icon {
+      font-size: 1.3rem;
+      color: var(--green);
+      opacity: 0.7;
+      width: 30px;
+      text-align: center;
+    }
+    .info-title {
+      font-size: 0.62rem;
+      letter-spacing: 0.15em;
+      color: rgba(204,255,204,0.45);
+      margin-bottom: 0.2rem;
+    }
+    .info-val { font-size: 0.88rem; color: #fff; }
+    .info-val-green { font-size: 0.88rem; color: var(--green); }
+
+    .red-quote {
+      border-left: 2px solid rgba(0,255,65,0.25);
+      padding-left: 1.25rem;
+      margin-top: 0.5rem;
+    }
+    .red-quote blockquote {
+      font-size: 0.85rem;
+      color: rgba(204,255,204,0.6);
+      font-style: italic;
+      line-height: 1.7;
+      margin-bottom: 0.4rem;
+    }
+    .red-quote cite {
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      color: rgba(204,255,204,0.3);
+    }
+
+    /* ─── RESPONSIVE ─────────────────────────────────────────── */
+    @media (max-width: 768px) {
+      .projects-grid { grid-template-columns: 1fr; padding: 1.5rem 1.25rem; }
+      .blue-header { padding: 1.5rem 1.25rem; }
+      .stats-bar { flex-wrap: wrap; gap: 1rem; }
+      .stat-div { display: none; }
+      .blue-footer { margin: 0 1.25rem; }
+      .red-layout { grid-template-columns: 1fr; }
+      .red-left { border-right: none; border-bottom: 1px solid rgba(0,255,65,0.08); }
+      .red-right { padding: 2rem 1.5rem; }
+      .pills-row { gap: 1rem; }
+    }
+  </style>
 </head>
-
 <body>
-    <div id="preloader">
-        <div id="boot-log"></div>
-    </div>
-    <div class="crt-overlay"></div>
-    <div class="scanlines"></div>
-    <div class="screen-content">
-        <!-- Desktop Icons Area -->
-        <div class="desktop-icons">
-            <div class="icon-group active" id="icon-recovered">
-                <div class="icon-box">
-                    <svg viewBox="0 0 24 24" class="retro-icon">
-                        <path fill="currentColor"
-                            d="M20 6h-8l-2-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 12H4V8h16v10z" />
-                    </svg>
-                </div>
-                <span>Recovered Data</span>
-            </div>
 
-            <div class="icon-group" id="icon-projects">
-                <div class="icon-box">
-                    <svg viewBox="0 0 24 24" class="retro-icon">
-                        <path fill="currentColor"
-                            d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.488.488 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.58 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z" />
-                    </svg>
-                </div>
-                <span>Projects</span>
-            </div>
+<!-- Matrix Rain Canvas -->
+<canvas id="matrix-canvas"></canvas>
 
-            <div class="icon-group" id="icon-about">
-                <div class="icon-box">
-                    <svg viewBox="0 0 24 24" class="retro-icon">
-                        <path fill="currentColor" d="M3 18h12v-2H3v2zM3 6v2h18V6H3zm0 7h18v-2H3v2z" />
-                        <path
-                            d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14z"
-                            fill="none" />
-                        <path fill="currentColor" d="M19 19H5V5h14v14zM17 12H7v-2h10v2zm0 4H7v-2h10v2zm0-8H7V6h10v2z"
-                            opacity="0.3" />
-                    </svg>
-                </div>
-                <span>About</span>
-            </div>
+<!-- Scanlines -->
+<div class="scanlines"></div>
 
-            <div class="icon-group" id="icon-skills">
-                <div class="icon-box">
-                    <svg viewBox="0 0 24 24" class="retro-icon">
-                        <path fill="currentColor"
-                            d="M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.3L9 6 6 9 1.6 4.7C.4 7.1.9 10.1 2.9 12.1c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l2.3-2.3c.5-.4.5-1.1.1-1.4z" />
-                    </svg>
-                </div>
-                <span>Skills</span>
-            </div>
+<!-- ══════════════════════════════════════════════
+     SCREEN: LANDING
+     ══════════════════════════════════════════════ -->
+<section id="screen-landing" class="screen active">
+  <p class="eyebrow">SYSTEM MESSAGE // PRIORITY ALPHA</p>
+  <h1 class="landing-headline">
+    This is your last chance.<br>
+    After this, there is no turning back.
+  </h1>
+  <p class="landing-sub">
+    You take the blue pill — the story ends. You wake up in your bed and believe whatever you want to believe.<br>
+    You take the red pill — you stay in Wonderland, and I show you how deep the rabbit hole goes.
+  </p>
 
-            <div class="icon-group" id="icon-contact">
-                <div class="icon-box">
-                    <svg viewBox="0 0 24 24" class="retro-icon">
-                        <path fill="currentColor"
-                            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-14h2v6h-2zm0 8h2v2h-2z" />
-                        <path fill="currentColor"
-                            d="M12 2L12 6M7 7L17 7M12 7L12 12M9 12L15 12M12 12L9 20L15 20L12 12" />
-                    </svg>
-                </div>
-                <span>Contact</span>
-            </div>
+  <div class="pills-row">
+    <!-- Blue Pill -->
+    <button class="pill-btn pill-blue" id="btn-blue" aria-label="Take the blue pill">
+      <div class="pill-shape-wrap">
+        <div class="pill-shape">
+          <div class="pill-gloss"></div>
         </div>
+      </div>
+      <span class="pill-label">BLUE PILL</span>
+      <span class="pill-sublabel">The Portfolio</span>
+    </button>
 
-        <!-- Main Window -->
-        <div class="mission-window">
-            <div class="window-header">
-                <span class="window-title">MISSION: PORTFOLIO</span>
-                <div class="window-controls">
-                    <div class="control-box" id="btn-minimize">_</div>
-                    <div class="control-box" id="btn-maximize">□</div>
-                    <div class="control-box" id="btn-close">X</div>
-                </div>
-            </div>
-
-            <div class="window-body">
-                <!-- Biography / Default -->
-                <div class="content-section active" id="content-recovered">
-                    <h2 class="typing-header">Biography:</h2>
-                    <div class="bio-container">
-                        <div class="bio-image-wrapper">
-                            <img src="aman.jpg" alt="Aman Kumar" class="bio-image">
-                        </div>
-                        <div class="bio-text-wrapper">
-                            <p class="typing-text" id="bio-text">
-                                // IDENTITY VERIFIED: AMAN KUMAR <br>
-                                // ROLE: SOFTWARE DEVELOPMENT AND ML ENGINEER <br>
-                                // CONTACT: aman.kumar.official007@gmail.com | 821989003 <br>
-                                <br>
-                                Specializing in AI/ML, Robotics, and Full Stack Web Development. <br>
-
-
-
-                                // STATUS: READY FOR ASSIGNMENT.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Projects -->
-                <div class="content-section" id="content-projects">
-                    <h2>Projects_Log</h2>
-                    <div class="projects-grid">
-                        <div class="project-card" title="Route Optimization Model using Q-learning & SUMO">
-                            <div class="project-img placeholder-glitch"></div>
-                            <span>NAVIK (AI/ML)</span>
-                        </div>
-                        <div class="project-card" title="Aadhaar Distribution Prediction using XGBoost">
-                            <div class="project-img placeholder-glitch"></div>
-                            <span>SAATHI (Data Science)</span>
-                        </div>
-                        <div class="project-card" title="UNet + ResNet-34 for Satellite Imagery Segmentation">
-                            <div class="project-img placeholder-glitch"></div>
-                            <span>MAPERS (Deep Learning)</span>
-                        </div>
-                        <div class="project-card" title="GPS-free Drone Navigation with ROS 2 & SLAM">
-                            <div class="project-img placeholder-glitch"></div>
-                            <span>DRONE_NAV (Robotics)</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- About -->
-                <div class="content-section" id="content-about">
-                    <h2>About_Protocol</h2>
-                    <div style="font-family: 'Share Tech Mono', monospace; font-size: 0.95rem;">
-                        <h3>> EDUCATION_LOG</h3>
-                        <p>
-                            [2022-Present] B.Tech, Govt. Engg. College, Vaishali (7.6/10)<br>
-                            [2021] Class 12, Jasidih Public School (67.2%)<br>
-                            [2019] Class 10, St. Francis School (89.4%)
-                        </p>
-                        <br>
-                        <h3>> EXPERIENCE_DATA</h3>
-                        <p>
-                            <strong>INTERN TRAINEE @ NIELIT PATNA</strong> (Aug'23 - Sep'23)<br>
-                            - AI Applications: Python, TensorFlow, Scikit-learn.<br>
-                            - Predictive analytics & Image classification.
-                        </p>
-                        <p>
-                            <strong>SOFTWARE DEV HEAD @ TECHNICAL CLUB</strong> (2024-Present)<br>
-                            - Leading GPS-free drone navigation project.<br>
-                            - Integrated ROS 2 with SLAM and Dijkstra's algorithm.
-                        </p>
-                    </div>
-                </div>
-
-                <!-- Skills -->
-                <div class="content-section" id="content-skills">
-                    <h2>Skill_Tree</h2>
-                    <ul class="skill-list">
-                        <li>> Languages: Python, C++, JavaScript</li>
-                        <li>> AI/ML: Numpy, Pandas, TensorFlow, PyTorch</li>
-                        <li>> Web: Node.js, HTML/CSS, Tailwind, Flask</li>
-                        <li>> Robotics: ROS2, Gazebo, OpenCV</li>
-                        <li>> Tools: MATLAB, Simulink</li>
-                    </ul>
-                </div>
-
-                <!-- Contact -->
-                <div class="content-section" id="content-contact">
-                    <h2>Comm_Link</h2>
-                    <div class="contact-form">
-                        <label>> TRANSMISSION_SOURCE:</label>
-                        <input type="text" placeholder="ENTER_EMAIL" class="terminal-input">
-                        <br><br>
-                        <label>> MESSAGE_DATA:</label>
-                        <textarea rows="4" placeholder="ENTER_MESSAGE" class="terminal-input"></textarea>
-                        <br><br>
-                        <button class="terminal-btn">[ SEND_TRANSMISSION ]</button>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <!-- Divider -->
+    <div class="or-divider">
+      <span class="or-line"></span>
+      <span class="or-text">OR</span>
+      <span class="or-line"></span>
     </div>
 
-    <!-- Taskbar -->
-    <div class="taskbar">
-        <button class="start-btn">
-            <span class="start-icon">░</span> START
-        </button>
-        <div class="taskbar-divider"></div>
-        <div class="task-items">
-            <div class="task-item active" id="task-portfolio">
-                [ MISSION: PORTFOLIO ]
-            </div>
+    <!-- Red Pill -->
+    <button class="pill-btn pill-red" id="btn-red" aria-label="Take the red pill">
+      <div class="pill-shape-wrap">
+        <div class="pill-shape">
+          <div class="pill-gloss"></div>
         </div>
-        <div class="system-tray">
-            <span id="clock">00:00:00</span>
+      </div>
+      <span class="pill-label">RED PILL</span>
+      <span class="pill-sublabel">The Truth</span>
+    </button>
+  </div>
+
+  <p class="landing-footer">Remember, all I'm offering is the truth. Nothing more.</p>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     SCREEN: GLITCH TRANSITION
+     ══════════════════════════════════════════════ -->
+<section id="screen-glitch">
+  <div class="glitch-center">
+    <div class="glitch-wrap">
+      <div class="glitch-base" id="glitch-text-base"></div>
+      <div class="glitch-layer1" id="glitch-text-l1"></div>
+      <div class="glitch-layer2" id="glitch-text-l2"></div>
+    </div>
+    <p class="glitch-subtext" id="glitch-subtext"></p>
+    <div class="glitch-progress-bar">
+      <div class="glitch-progress-fill" id="glitch-progress"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     SCREEN: BLUE PILL PATH
+     ══════════════════════════════════════════════ -->
+<section id="screen-blue" class="screen">
+  <div class="blue-header">
+    <button class="back-btn" id="back-from-blue">← GO BACK</button>
+    <p class="eyebrow">// SIMULATION PROTOCOL ACTIVE</p>
+    <h1 class="blue-title">The Illusion of Reality</h1>
+    <p class="blue-subtitle">
+      You chose the blue pill. Welcome to the construct — a curated simulation of work and craft.
+    </p>
+    <div class="stats-bar">
+      <div class="stat-item">
+        <span>PROJECTS</span>
+        <span class="stat-val">06</span>
+      </div>
+      <div class="stat-div"></div>
+      <div class="stat-item">
+        <span>YEARS ACTIVE</span>
+        <span class="stat-val">05</span>
+      </div>
+      <div class="stat-div"></div>
+      <div class="stat-item">
+        <span>STATUS</span>
+        <span class="stat-val-green">ONLINE</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="projects-grid" id="projects-grid">
+    <!-- Injected by JS -->
+  </div>
+
+  <div class="blue-footer">
+    <p>// END OF SIMULATION // RETURN TO CHOICE?</p>
+    <button class="other-pill-btn" id="switch-to-red">TAKE THE RED PILL INSTEAD</button>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     SCREEN: RED PILL PATH
+     ══════════════════════════════════════════════ -->
+<section id="screen-red" class="screen">
+  <div class="red-layout">
+    <!-- Left: Terminal -->
+    <div class="red-left">
+      <button class="back-btn back-btn-red" id="back-from-red">← ABORT MISSION</button>
+
+      <div class="terminal-box">
+        <div class="term-chrome">
+          <div class="chrome-dots">
+            <div class="chrome-dot" style="background:#ff5f57"></div>
+            <div class="chrome-dot" style="background:#febc2e"></div>
+            <div class="chrome-dot" style="background:#28c840"></div>
+          </div>
+          <span class="chrome-title">OPERATOR_TERMINAL v2.34 — root@matrix</span>
         </div>
+        <div class="term-body" id="term-body">
+          <!-- Boot lines + form injected by JS -->
+          <span class="cursor">_</span>
+        </div>
+      </div>
     </div>
 
-    <script src="script.js"></script>
+    <!-- Right: Info -->
+    <div class="red-right">
+      <div>
+        <p class="eyebrow red-eyebrow">// THE CONSTRUCT</p>
+        <h1 class="red-title">Welcome to<br>the Real World.</h1>
+        <p class="red-desc">
+          You took the red pill. There is no simulation here — only signal and noise.
+          Send a transmission through the operator terminal to establish a connection.
+        </p>
+      </div>
+
+      <div class="info-cards">
+        <div class="info-card">
+          <div class="info-icon">◈</div>
+          <div>
+            <div class="info-title">RESPONSE TIME</div>
+            <div class="info-val">&lt; 24 HOURS</div>
+          </div>
+        </div>
+        <div class="info-card">
+          <div class="info-icon">◉</div>
+          <div>
+            <div class="info-title">ENCRYPTION</div>
+            <div class="info-val">RSA-2048</div>
+          </div>
+        </div>
+        <div class="info-card">
+          <div class="info-icon">⬡</div>
+          <div>
+            <div class="info-title">OPERATOR STATUS</div>
+            <div class="info-val-green">ONLINE</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="red-quote">
+        <blockquote>"The answer is out there, Neo, and it's looking for you."</blockquote>
+        <cite>— Trinity</cite>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     JAVASCRIPT
+     ══════════════════════════════════════════════ -->
+<script>
+/* ─── MATRIX RAIN ─────────────────────────────────────────── */
+const canvas = document.getElementById('matrix-canvas');
+const ctx    = canvas.getContext('2d');
+const CHARS  = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ@#$%&';
+
+let rainColor   = '#00ff41';
+let rainOpacity = 0.5;
+let cols, drops;
+const FS = 14;
+
+function resizeCanvas() {
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+  cols  = Math.floor(window.innerWidth / FS);
+  drops = Array(cols).fill(1);
+}
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
+let lastTime = 0;
+const INTERVAL = 45;
+
+function drawRain(ts) {
+  requestAnimationFrame(drawRain);
+  if (ts - lastTime < INTERVAL) return;
+  lastTime = ts;
+
+  ctx.fillStyle = 'rgba(0,0,0,0.05)';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.font = `${FS}px 'Share Tech Mono', monospace`;
+
+  for (let i = 0; i < drops.length; i++) {
+    const ch = CHARS[Math.floor(Math.random() * CHARS.length)];
+    const x  = i * FS;
+    const y  = drops[i] * FS;
+    ctx.fillStyle = (drops[i] * FS > canvas.height * 0.9 || Math.random() > 0.985) ? '#ffffff' : rainColor;
+    ctx.fillText(ch, x, y);
+    if (y > canvas.height && Math.random() > 0.975) drops[i] = 0;
+    drops[i]++;
+  }
+}
+requestAnimationFrame(drawRain);
+
+function setRain(color, opacity) {
+  rainColor = color;
+  canvas.style.opacity = opacity;
+}
+
+/* ─── SCREEN ROUTER ──────────────────────────────────────── */
+let currentScreen = 'landing';
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  if (id === 'glitch') {
+    document.getElementById('screen-glitch').style.display = 'flex';
+  } else {
+    document.getElementById('screen-glitch').style.display = 'none';
+    const el = document.getElementById('screen-' + id);
+    if (el) el.classList.add('active');
+  }
+  currentScreen = id;
+}
+
+/* ─── GLITCH TRANSITION ──────────────────────────────────── */
+function startGlitch(choice, callback) {
+  const color     = choice === 'red' ? '#ff003c' : '#00ff41';
+  const bgColor   = choice === 'red' ? '#ff003c' : '#00b4ff';
+  const label     = choice === 'red' ? 'JACK IN...' : 'LOADING CONSTRUCT...';
+  const sublabel  = choice === 'red' ? 'Follow the white rabbit...' : 'There is no spoon...';
+
+  // Set glitch text + colors
+  ['glitch-text-base','glitch-text-l1','glitch-text-l2'].forEach(id => {
+    const el = document.getElementById(id);
+    el.textContent = label;
+    el.style.color = bgColor;
+  });
+  document.getElementById('glitch-subtext').textContent = sublabel;
+
+  const prog = document.getElementById('glitch-progress');
+  prog.style.background   = bgColor;
+  prog.style.boxShadow    = `0 0 10px ${bgColor}`;
+  prog.style.width        = '0%';
+  prog.style.animation    = 'none';
+
+  setRain(color, 1);
+  showScreen('glitch');
+
+  // Restart progress bar animation
+  requestAnimationFrame(() => {
+    prog.style.animation = 'progress-fill 2.4s linear forwards';
+  });
+
+  setTimeout(() => {
+    callback();
+  }, 2700);
+}
+
+/* ─── NAVIGATION HANDLERS ───────────────────────────────── */
+document.getElementById('btn-blue').addEventListener('click', () => {
+  setRain('#00ff41', 1);
+  startGlitch('blue', () => {
+    setRain('#00b4ff', 0.15);
+    buildProjectGrid();
+    showScreen('blue');
+  });
+});
+
+document.getElementById('btn-red').addEventListener('click', () => {
+  setRain('#ff003c', 1);
+  startGlitch('red', () => {
+    setRain('#00ff41', 0.3);
+    if (!redBooted) bootTerminal();
+    showScreen('red');
+  });
+});
+
+document.getElementById('back-from-blue').addEventListener('click', goHome);
+document.getElementById('back-from-red').addEventListener('click', goHome);
+document.getElementById('switch-to-red').addEventListener('click', () => {
+  setRain('#ff003c', 1);
+  startGlitch('red', () => {
+    setRain('#00ff41', 0.3);
+    if (!redBooted) bootTerminal();
+    showScreen('red');
+  });
+});
+
+function goHome() {
+  setRain('#00ff41', 0.5);
+  showScreen('landing');
+}
+
+/* ─── PROJECT DATA ──────────────────────────────────────── */
+const PROJECTS = [
+  {
+    title: 'Echoes of Silence', genre: 'Drama / Thriller', year: 2024,
+    thumbnail: 'linear-gradient(135deg,#0d1b2a 0%,#1b2838 30%,#0f3460 60%,#16213e 100%)',
+    bitrate: '150 Mb/s', resolution: '4K UHD', role: 'Director, Editor',
+    description: 'A haunting exploration of memory and identity through fragmented timelines.',
+    status: 'RELEASED',
+  },
+  {
+    title: 'Neon Requiem', genre: 'Sci-Fi / Noir', year: 2024,
+    thumbnail: 'linear-gradient(135deg,#0d0221 0%,#190d35 30%,#2d1b69 60%,#11052c 100%)',
+    bitrate: '200 Mb/s', resolution: '4K HDR', role: 'Cinematographer',
+    description: 'A cyberpunk detective story set in a city where light never reaches the ground.',
+    status: 'RELEASED',
+  },
+  {
+    title: 'The Last Signal', genre: 'Documentary', year: 2023,
+    thumbnail: 'linear-gradient(135deg,#0a1628 0%,#1a2744 30%,#0e3b52 60%,#071322 100%)',
+    bitrate: '80 Mb/s', resolution: '2K DCI', role: 'Producer, Director',
+    description: 'Following three radio astronomers listening for the first sign of alien life.',
+    status: 'FESTIVAL RUN',
+  },
+  {
+    title: 'Fracture Lines', genre: 'Action / Drama', year: 2023,
+    thumbnail: 'linear-gradient(135deg,#0d1117 0%,#161b22 30%,#0d2137 60%,#010409 100%)',
+    bitrate: '220 Mb/s', resolution: '4K IMAX', role: 'VFX Supervisor',
+    description: 'When the fault lines shift, every choice becomes a matter of survival.',
+    status: 'POST-PRODUCTION',
+  },
+  {
+    title: 'Meridian', genre: 'Experimental', year: 2022,
+    thumbnail: 'linear-gradient(135deg,#001e3c 0%,#00264d 30%,#003a75 60%,#001020 100%)',
+    bitrate: '90 Mb/s', resolution: '1080p', role: 'Writer, Director',
+    description: 'A dreamlike journey through the liminal spaces between waking and sleep.',
+    status: 'ARCHIVED',
+  },
+  {
+    title: 'Project Helix', genre: 'Short Film', year: 2022,
+    thumbnail: 'linear-gradient(135deg,#050d18 0%,#0a1929 30%,#0e2840 60%,#020810 100%)',
+    bitrate: '120 Mb/s', resolution: '2.35:1 Anamorphic', role: 'Full Production',
+    description: 'A 12-minute meditation on genetic memory and what we inherit from the past.',
+    status: 'RELEASED',
+  },
+];
+
+function buildProjectGrid() {
+  const grid = document.getElementById('projects-grid');
+  if (grid.children.length > 0) return; // already built
+  PROJECTS.forEach((p, i) => {
+    const card = document.createElement('div');
+    card.className = 'project-card';
+    card.style.animationDelay = `${i * 0.1}s`;
+    card.innerHTML = `
+      <div class="card-thumb-wrap">
+        <div class="card-thumb" style="background:${p.thumbnail}"></div>
+        <div class="card-thumb-overlay"></div>
+        <div class="card-noise"></div>
+        <div class="sys-data-overlay">
+          <div class="sys-header">// SYSTEM DATA</div>
+          <div class="sys-row"><span>BITRATE</span><span>${p.bitrate}</span></div>
+          <div class="sys-row"><span>RESOLUTION</span><span>${p.resolution}</span></div>
+          <div class="sys-row"><span>ROLE</span><span>${p.role}</span></div>
+          <div class="sys-row"><span>STATUS</span><span class="sys-status-ok">${p.status}</span></div>
+        </div>
+        <div class="card-year">${p.year}</div>
+      </div>
+      <div class="card-info">
+        <div class="card-genre">${p.genre}</div>
+        <h3 class="card-title">${p.title}</h3>
+        <p class="card-desc">${p.description}</p>
+        <div class="view-btn">VIEW PROJECT →</div>
+      </div>
+      <div class="card-glow-border"></div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+/* ─── RED PILL TERMINAL ─────────────────────────────────── */
+let redBooted = false;
+
+const BOOT_LINES = [
+  '> INITIALIZING CONSTRUCT...',
+  '> LOADING OPERATOR INTERFACE...',
+  '> ESTABLISHING SECURE CHANNEL...',
+  '> CONNECTION ESTABLISHED.',
+  '> OPERATOR ONLINE.',
+  '',
+  '  "I can only show you the door.',
+  "   You're the one that has to walk through it.\"",
+  '',
+  '> READY FOR INPUT.',
+];
+
+function bootTerminal() {
+  redBooted = true;
+  const body = document.getElementById('term-body');
+  body.innerHTML = ''; // clear cursor only first time
+  let i = 0;
+
+  function addLine() {
+    if (i >= BOOT_LINES.length) {
+      appendForm(body);
+      return;
+    }
+    const line = BOOT_LINES[i];
+    const d = document.createElement('div');
+    d.className = 'term-line' + (line.startsWith('>') ? ' cmd' : ' echo');
+    d.textContent = line || ' ';
+    body.appendChild(d);
+    body.scrollTop = body.scrollHeight;
+    i++;
+    setTimeout(addLine, i < 6 ? 220 : 80);
+  }
+  setTimeout(addLine, 300);
+}
+
+function appendForm(body) {
+  const wrap = document.createElement('div');
+  wrap.innerHTML = `
+    <div class="term-prompt-line">
+      <span class="prompt-symbol">$</span>
+      <span class="prompt-text"> Operator, I need an exit.</span>
+    </div>
+    <div class="term-blank"></div>
+    <form class="terminal-form" id="contact-form">
+      <div class="field-row">
+        <span class="field-label">NAME</span>
+        <span class="field-sep">::</span>
+        <input class="field-input" id="f-name" type="text" placeholder="enter_identifier" autocomplete="off" spellcheck="false" />
+      </div>
+      <div class="field-row">
+        <span class="field-label">CHANNEL</span>
+        <span class="field-sep">::</span>
+        <input class="field-input" id="f-email" type="email" placeholder="signal@frequency.net" autocomplete="off" spellcheck="false" />
+      </div>
+      <div class="field-row">
+        <span class="field-label">PAYLOAD</span>
+        <span class="field-sep">::</span>
+        <textarea class="field-input field-textarea" id="f-msg" rows="4" placeholder="describe_your_exit_request..." spellcheck="false"></textarea>
+      </div>
+      <div class="term-blank"></div>
+      <button type="submit" class="submit-btn" id="submit-btn" disabled>
+        <span class="submit-bracket">[</span>
+        EXECUTE TRANSMISSION
+        <span class="submit-bracket">]</span>
+      </button>
+    </form>
+    <div class="term-blank"></div>
+    <span class="cursor">_</span>
+  `;
+  body.appendChild(wrap);
+  body.scrollTop = body.scrollHeight;
+
+  // Live validation
+  const nameEl  = document.getElementById('f-name');
+  const emailEl = document.getElementById('f-email');
+  const msgEl   = document.getElementById('f-msg');
+  const btn      = document.getElementById('submit-btn');
+
+  function checkValidity() {
+    btn.disabled = !(nameEl.value && emailEl.value && msgEl.value);
+  }
+  nameEl.addEventListener('input', checkValidity);
+  emailEl.addEventListener('input', checkValidity);
+  msgEl.addEventListener('input', checkValidity);
+
+  document.getElementById('contact-form').addEventListener('submit', e => {
+    e.preventDefault();
+    handleTransmit(nameEl.value, emailEl.value, msgEl.value, body);
+    wrap.querySelector('form').style.display = 'none';
+  });
+}
+
+function handleTransmit(name, email, message, body) {
+  const lines = [
+    '',
+    `> TRANSMITTING TO: ${email}`,
+    `> PAYLOAD: "${message.slice(0, 40)}..."`,
+    '> ENCRYPTING WITH RSA-2048...',
+    '> ROUTING THROUGH PROXY NODES...',
+    '> SIGNAL ACQUIRED.',
+    '> TRANSMISSION COMPLETE.',
+    '',
+    '  "The Matrix cannot tell you who you are."',
+    '  An operator will find you.',
+    '',
+  ];
+  let i = 0;
+  function addLine() {
+    if (i >= lines.length) return;
+    const line = lines[i];
+    const d = document.createElement('div');
+    d.className = 'term-line' + (line.startsWith('>') ? ' cmd' : ' echo');
+    d.textContent = line || ' ';
+    body.appendChild(d);
+    body.scrollTop = body.scrollHeight;
+    i++;
+    setTimeout(addLine, 120);
+  }
+  addLine();
+}
+</script>
 </body>
-
 </html>
